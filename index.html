@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#04180f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JH Baccara Road">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>JH Baccara Road</title>
+<style>
+:root{
+  --bg:#04180f;--felt:#073f28;--felt2:#052b1d;--gold:#d7b45a;
+  --paper:#fffdf6;--grid:#d8d0bd;--p:#1974df;--b:#dc3f43;--t:#26985a;
+  --panel:rgba(0,0,0,.30);--muted:#c9d5ce
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;min-height:100%;background:var(--bg);color:#fff;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overscroll-behavior:none
+}
+body{
+  padding:max(env(safe-area-inset-top),7px) max(env(safe-area-inset-right),7px)
+          max(env(safe-area-inset-bottom),7px) max(env(safe-area-inset-left),7px);
+  background:
+    radial-gradient(circle at 20% 0,rgba(29,122,74,.42),transparent 38%),
+    linear-gradient(160deg,var(--felt),var(--bg) 72%)
+}
+.app{max-width:1200px;margin:auto}
+.topbar{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;margin-bottom:7px
+}
+.logo{
+  color:var(--gold);font-size:19px;font-weight:900;letter-spacing:.2px;white-space:nowrap
+}
+.stats{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.stat{
+  min-width:58px;padding:5px 6px;text-align:center;background:var(--panel);
+  border:1px solid var(--gold);border-radius:9px
+}
+.stat small{display:block;font-size:7px;color:#d6dfda}
+.stat b{font-size:15px}
+.stat.p b{color:var(--p)}.stat.b b{color:var(--b)}.stat.t b{color:var(--t)}
+
+.layout{display:grid;grid-template-columns:1fr;gap:7px}
+.left,.right{min-width:0}
+.road-title{
+  display:flex;justify-content:space-between;align-items:center;
+  color:var(--gold);font-weight:800;font-size:11px;margin:0 2px 4px
+}
+.road-wrap{
+  overflow-x:auto;overflow-y:hidden;border:2px solid var(--gold);
+  border-radius:12px;background:var(--paper);-webkit-overflow-scrolling:touch
+}
+.road{
+  display:grid;grid-template-rows:repeat(6,36px);grid-auto-columns:36px;
+  min-width:100%;width:max-content;
+  background:
+    linear-gradient(to right,transparent 35px,var(--grid) 35px,var(--grid) 36px) 0 0/36px 36px,
+    linear-gradient(to bottom,transparent 35px,var(--grid) 35px,var(--grid) 36px) 0 0/36px 36px,
+    var(--paper)
+}
+.cell{width:36px;height:36px;display:flex;align-items:center;justify-content:center;position:relative}
+.mark{
+  width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:900;font-size:13px;box-shadow:0 2px 4px rgba(0,0,0,.22)
+}
+.mark.p{background:var(--p)}.mark.b{background:var(--b)}
+.tie-badge{
+  position:absolute;right:0;bottom:0;min-width:14px;height:14px;padding:0 2px;
+  border-radius:999px;background:var(--t);color:#fff;border:1px solid #fff;
+  display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900
+}
+.empty{
+  height:216px;display:flex;align-items:center;justify-content:center;color:#777;font-size:11px;
+  background:
+    linear-gradient(to right,transparent 35px,var(--grid) 35px,var(--grid) 36px) 0 0/36px 36px,
+    linear-gradient(to bottom,transparent 35px,var(--grid) 35px,var(--grid) 36px) 0 0/36px 36px,
+    var(--paper)
+}
+
+.info{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}
+.info-box{
+  min-height:47px;background:var(--panel);border:1px solid var(--gold);border-radius:9px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center
+}
+.info-box small{color:var(--muted);font-size:8px}
+.info-box b{font-size:14px;margin-top:1px}
+
+.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.result{
+  border:0;border-radius:14px;min-height:84px;color:#fff;font-weight:900;font-size:14px;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.18),0 5px 12px rgba(0,0,0,.22)
+}
+.result span{display:block;font-size:31px;line-height:1}
+.result.p{background:linear-gradient(#2c88ef,#1158b8)}
+.result.b{background:linear-gradient(#ef5151,#b92424)}
+.result.t{background:linear-gradient(#41b873,#187342)}
+.result:active{transform:scale(.98)}
+
+.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.tool{
+  border:1px solid var(--gold);border-radius:10px;padding:9px 5px;
+  background:var(--panel);color:#fff;font-weight:800;font-size:11px
+}
+.tool.armed{background:#8f1f26}
+
+.notice{text-align:center;color:#ffd27a;font-size:10px;min-height:15px;padding-top:3px}
+.recent{
+  margin-top:3px;padding:6px;border:1px solid rgba(215,180,90,.65);
+  border-radius:9px;background:rgba(0,0,0,.22)
+}
+.recent-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.recent-title{color:var(--gold);font-weight:800;font-size:10px}
+.shoe{color:#c9d5ce;font-size:9px}
+.sequence{display:flex;gap:3px;overflow-x:auto}
+.seq{
+  min-width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:900
+}
+.seq.p{background:var(--p)}.seq.b{background:var(--b)}.seq.t{background:var(--t)}
+.footer{text-align:center;color:#8fa096;font-size:8px;padding-top:4px}
+
+@media (orientation:landscape){
+  body{overflow:hidden}
+  .app{height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 14px)}
+  .topbar{height:43px;margin-bottom:5px}
+  .logo{font-size:18px}
+  .layout{
+    height:calc(100% - 48px);
+    grid-template-columns:minmax(0,2.15fr) minmax(315px,1fr);
+    gap:7px
+  }
+  .left{display:grid;grid-template-rows:auto 1fr auto;min-height:0}
+  .right{display:grid;grid-template-rows:1fr auto auto auto auto;gap:5px;min-height:0}
+  .road-wrap{min-height:0}
+  .road{
+    grid-template-rows:repeat(6,43px);grid-auto-columns:43px;
+    background:
+      linear-gradient(to right,transparent 42px,var(--grid) 42px,var(--grid) 43px) 0 0/43px 43px,
+      linear-gradient(to bottom,transparent 42px,var(--grid) 42px,var(--grid) 43px) 0 0/43px 43px,
+      var(--paper)
+  }
+  .cell{width:43px;height:43px}.mark{width:33px;height:33px;font-size:15px}
+  .empty{height:258px}
+  .info{margin-top:5px}
+  .buttons{height:100%}
+  .result{min-height:100%;font-size:13px}.result span{font-size:28px}
+  .tools{margin-top:0}
+  .recent{margin-top:0}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="logo">JH Baccara Road</div>
+    <div class="stats">
+      <div class="stat p"><small>PLAYER</small><b id="pCount">0</b></div>
+      <div class="stat b"><small>BANKER</small><b id="bCount">0</b></div>
+      <div class="stat t"><small>TIE</small><b id="tCount">0</b></div>
+      <div class="stat"><small>ALL</small><b id="total">0</b></div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="left">
+      <div class="road-title">
+        <span>BIG ROAD</span>
+        <span id="gameNo">GAME 0</span>
+      </div>
+
+      <div class="road-wrap" id="roadWrap">
+        <div class="empty" id="empty">PLAYER / BANKER / TIE를 눌러주세요</div>
+        <div class="road" id="road" style="display:none"></div>
+      </div>
+
+      <div class="info">
+        <div class="info-box"><small>현재 연속</small><b id="currentStreak">-</b></div>
+        <div class="info-box"><small>최대 연속</small><b id="maxStreak">-</b></div>
+        <div class="info-box"><small>PLAYER 승률</small><b id="pRate">0%</b></div>
+        <div class="info-box"><small>BANKER 승률</small><b id="bRate">0%</b></div>
+      </div>
+    </section>
+
+    <section class="right">
+      <div class="buttons">
+        <button class="result p" id="btnP"><span>P</span>PLAYER</button>
+        <button class="result b" id="btnB"><span>B</span>BANKER</button>
+        <button class="result t" id="btnT"><span>T</span>TIE</button>
+      </div>
+
+      <div class="tools">
+        <button class="tool" id="undo">↩ 실행취소</button>
+        <button class="tool" id="newShoe">🎴 NEW SHOE</button>
+        <button class="tool" id="clear">🗑 전체 삭제</button>
+      </div>
+
+      <div class="notice" id="notice"></div>
+
+      <div class="recent">
+        <div class="recent-head">
+          <div class="recent-title">최근 기록</div>
+          <div class="shoe" id="shoeLabel">SHOE 1</div>
+        </div>
+        <div class="sequence" id="sequence"></div>
+      </div>
+
+      <div class="footer">Version 2.0 · 자동 저장</div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const STORAGE_KEY='jhBaccaraRoadV2';
+  let state={results:[],shoe:1,shoeStarts:[0]};
+  let clearArmed=false,clearTimer=null;
+
+  function load(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+      if(saved && Array.isArray(saved.results)){
+        state={
+          results:saved.results.filter(x=>x==='P'||x==='B'||x==='T'),
+          shoe:Number(saved.shoe)||1,
+          shoeStarts:Array.isArray(saved.shoeStarts)?saved.shoeStarts:[0]
+        };
+        return;
+      }
+      const oldKeys=['jhBaccaratRoadV1','jaehoBaccaratFinalV1','baccaratPBTFinal'];
+      for(const key of oldKeys){
+        const old=JSON.parse(localStorage.getItem(key)||'null');
+        if(Array.isArray(old)){
+          state.results=old.filter(x=>x==='P'||x==='B'||x==='T');
+          break;
+        }
+      }
+    }catch(e){}
+  }
+
+  function save(){
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}
+  }
+
+  function buildRoad(){
+    const cells=[],occupied=new Set();
+    let col=0,row=0,last=null,pendingTie=0;
+
+    for(const value of state.results){
+      if(value==='T'){
+        if(cells.length) cells[cells.length-1].ties++;
+        else pendingTie++;
+        continue;
+      }
+
+      if(last===null){
+        col=0;row=0;
+      }else if(value===last){
+        if(row<5 && !occupied.has(col+','+(row+1))){
+          row++;
+        }else{
+          col++;
+          while(occupied.has(col+','+row)) col++;
+        }
+      }else{
+        col++;
+        row=0;
+        while(occupied.has(col+','+row)) col++;
+      }
+
+      cells.push({value,col,row,ties:pendingTie});
+      pendingTie=0;
+      occupied.add(col+','+row);
+      last=value;
+    }
+    return cells;
+  }
+
+  function streakInfo(){
+    const base=state.results.filter(x=>x!=='T');
+    if(!base.length)return{current:'-',max:'-'};
+
+    let current=1,max=1,maxValue=base[0],run=1;
+    for(let i=1;i<base.length;i++){
+      run=base[i]===base[i-1]?run+1:1;
+      if(run>max){max=run;maxValue=base[i]}
+    }
+    for(let i=base.length-1;i>0&&base[i]===base[i-1];i--)current++;
+
+    return{
+      current:base[base.length-1]+' '+current,
+      max:maxValue+' '+max
+    };
+  }
+
+  function resetClear(){
+    clearArmed=false;
+    $('clear').classList.remove('armed');
+    $('clear').textContent='🗑 전체 삭제';
+    $('notice').textContent='';
+  }
+
+  function render(){
+    const results=state.results;
+    const pc=results.filter(x=>x==='P').length;
+    const bc=results.filter(x=>x==='B').length;
+    const tc=results.filter(x=>x==='T').length;
+    const decided=pc+bc;
+
+    $('pCount').textContent=pc;
+    $('bCount').textContent=bc;
+    $('tCount').textContent=tc;
+    $('total').textContent=results.length;
+    $('gameNo').textContent='GAME '+results.length;
+    $('shoeLabel').textContent='SHOE '+state.shoe;
+    $('pRate').textContent=decided?Math.round(pc/decided*100)+'%':'0%';
+    $('bRate').textContent=decided?Math.round(bc/decided*100)+'%':'0%';
+
+    const cells=buildRoad();
+    if(!cells.length){
+      $('empty').style.display='flex';
+      $('road').style.display='none';
+    }else{
+      $('empty').style.display='none';
+      $('road').style.display='grid';
+      const maxCol=Math.max.apply(null,cells.map(c=>c.col))+1;
+      $('road').style.gridTemplateColumns='repeat('+maxCol+',36px)';
+      $('road').innerHTML=cells.map(c=>
+        '<div class="cell" style="grid-column:'+(c.col+1)+';grid-row:'+(c.row+1)+'">'+
+          '<div class="mark '+(c.value==='P'?'p':'b')+'">'+c.value+'</div>'+
+          (c.ties?'<div class="tie-badge">'+c.ties+'</div>':'')+
+        '</div>'
+      ).join('');
+      setTimeout(()=>$('roadWrap').scrollLeft=$('roadWrap').scrollWidth,20);
+    }
+
+    const streak=streakInfo();
+    $('currentStreak').textContent=streak.current;
+    $('maxStreak').textContent=streak.max;
+
+    $('sequence').innerHTML=results.slice(-40).map(v=>
+      '<div class="seq '+(v==='P'?'p':v==='B'?'b':'t')+'">'+v+'</div>'
+    ).join('');
+  }
+
+  function add(value){
+    state.results.push(value);
+    save();
+    render();
+    resetClear();
+    if(navigator.vibrate)navigator.vibrate(20);
+  }
+
+  $('btnP').onclick=()=>add('P');
+  $('btnB').onclick=()=>add('B');
+  $('btnT').onclick=()=>add('T');
+
+  $('undo').onclick=()=>{
+    if(state.results.length){
+      state.results.pop();
+      save();
+      render();
+    }
+    resetClear();
+  };
+
+  $('newShoe').onclick=()=>{
+    state.shoe++;
+    state.shoeStarts.push(state.results.length);
+    save();
+    $('notice').textContent='새 슈가 시작되었습니다.';
+    $('shoeLabel').textContent='SHOE '+state.shoe;
+    setTimeout(()=>$('notice').textContent='',1200);
+  };
+
+  $('clear').onclick=()=>{
+    if(!state.results.length){
+      $('notice').textContent='삭제할 기록이 없습니다.';
+      return;
+    }
+    if(!clearArmed){
+      clearArmed=true;
+      $('clear').classList.add('armed');
+      $('clear').textContent='한 번 더 누르면 삭제';
+      $('notice').textContent='전체 삭제 버튼을 한 번 더 눌러주세요.';
+      clearTimeout(clearTimer);
+      clearTimer=setTimeout(resetClear,3000);
+      return;
+    }
+
+    clearTimeout(clearTimer);
+    state={results:[],shoe:1,shoeStarts:[0]};
+    save();
+    render();
+    resetClear();
+    $('notice').textContent='전체 기록이 삭제되었습니다.';
+    setTimeout(()=>$('notice').textContent='',1200);
+  };
+
+  if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+  }
+
+  load();
+  render();
+})();
+</script>
+</body>
+</html>
